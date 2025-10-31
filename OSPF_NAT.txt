@@ -1,0 +1,45 @@
+1. Настройка интерфейсов
+	interface GigabitEthernet0/1.800
+	 encapsulation dot1Q 800
+	 ip address 192.168.1.126 255.255.255.128
+...
+
+2. Настройка DHCP
+	ip dhcp pool subnet1
+	 network 192.168.1.0 255.255.255.128
+	 default-router 192.168.1.126
+...
+
+3. Настройка Loopback 0 (1 на роутер)
+	interface Loopback0
+	 ip address 192.168.101.2 255.255.255.255
+
+4. Настройка OSPF
+	router ospf 1
+	 network 192.168.2.0 0.0.0.3 area 0
+	 network 192.168.1.0 0.0.0.127 area 0
+	 network 192.168.1.160 0.0.0.15 area 0
+
+5. Настройки по умолчанию (только на граничных)
+	ip route 0.0.0.0 0.0.0.0 211.211.0.2 
+
+6. Включение режима обмена деф. маршрутом (только на граничных)
+	router ospf 1
+	default-information originate
+
+7. Объявление внут. и внеш. интерфейсов для сет. трансляции (только на граничных)
+	interface GigabitEthernet0/0
+	 ip nat outside
+	interface GigabitEthernet0/0/0
+	 ip nat inside
+	interface GigabitEthernet0/1/0
+	 ip nat inside
+
+8. Создание Access листа для сет. трансляции (только на граничных)
+	ip access-list standard NAT
+	 permit 192.168.1.0 0.0.0.127
+	 permit 192.168.1.160 0.0.0.15
+	 permit 192.168.1.128 0.0.0.31
+
+9. Включение трансляции (только на граничных)
+	ip nat inside source list NAT interface GigabitEthernet0/0 overload
